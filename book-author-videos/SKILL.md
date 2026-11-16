@@ -12,7 +12,7 @@ Keep code to a minimum. This skill is judgement guided by rules and examples, pl
 ## 1. Setup (first use only)
 
 Ask the user these, in one message, with defaults in brackets:
-1. **Reading list:** a Notion page, a file, or a pasted list. Each book may carry an optional "source", such as who recommended it or which course or session it came from.
+1. **Reading list:** a Notion page, a file, or a pasted list. Each book may carry an optional "source", such as who recommended it or which course or session it came from. If a book has no author, find it by search and confirm the author with the user during setup.
 2. **Time and time zone** for the daily post. [8:00 AM local]
 3. **Optional context** for the "why it matters to you" line: goals, role, course, or personal decision rules. [none]
 4. **Where to post:** this conversation or thread. [here]
@@ -32,7 +32,7 @@ Then:
 1. Read `rules.md` (the user's overrides), `picks.md` and `notes.md`.
 2. If the last run has no row in `picks.md`, say so briefly in today's post.
 3. Read the reading list. If it is unreachable, use `books-cache.md` and say so. If it is reachable and changed, refresh the cache.
-4. Pick one book at random that isn't yet in `picks.md` for the current round. When all are covered, start the next round and say so.
+4. Pick one book at random from the list you just read (not an older cache), including books added since the last run, that isn't yet in `picks.md` for the current round. When all are covered, start the next round and say so.
 5. Search and verify (sections 3 and 4).
 6. Post (section 5).
 7. Append the row to `picks.md` only after posting.
@@ -45,6 +45,7 @@ Then:
 - **Talks from before publication** generally don't count, even if they cover the same ideas.
 - **Never:** summaries, audiobooks, reviews, reaction videos, or other people discussing the book.
 - **Length buckets:** about 10 min = 5 to 18; middle = 20 to 45; long = 60+.
+- **Between buckets (18-20 or 45-60 min):** such a video is never a match. It may fill the nearest empty slot as a labelled fallback, e.g. "No 20-45 min match. Nearest: ... (54 min)". A video known only by a lower bound (e.g. "53+ min") can only be a fallback, never a match outside the long slot.
 - **Empty buckets:** a nearest match may fill one only as a clearly labelled fallback. Fallbacks must be neutral, with no commentator opinion, such as a straight summary or a filmed reading. If nothing fits, say "no match".
 - **Unconfirmed videos:** anything promising but not fully confirmed goes under "Couldn't verify", never in a slot.
 
@@ -70,6 +71,7 @@ Long podcast interviews are the main source for the middle and long slots.
 - **YouTube pages are often blocked or rate-limited for agents.** Fetch them one at a time, at most 3 tries per run.
 - **Speaker and topic:** look up the video ID on summary or transcript sites (videohighlight.com/v/<ID>, rosetta.to, glasp.co/youtube/<ID>). There must be positive evidence the author is the speaker or guest. If the transcript refers to the author in the third person, reject it.
 - **Length:** take it from the show's own listing or a transcript site (podwise.ai, podcasts.happyscribe.com via the last timestamp, metacast.app, ted.com, the show's website). Podcast audio length is close enough to the YouTube upload. If only a lower bound is known (from chapters), use it for the long slot only.
+- **When a slot is empty but candidates of unknown length exist,** spend the remaining budget on them first: the transcript tab on the summary site (last timestamp), the event or show page, then one YouTube page per candidate (still at most 3 YouTube tries per run). Only then fall back.
 - **If a browser or yt-dlp is available,** use it for metadata only: `yt-dlp --skip-download --print "%(title)s|%(duration_string)s|%(channel)s"`.
 - **Links:** only post URLs that appeared in this run's search or fetch output. Check every video ID before posting. Never type or guess an ID.
 - **Budget:** about 30 page checks, then post what is verified and name the gaps.
@@ -79,16 +81,16 @@ Long podcast interviews are the main source for the middle and long slots.
 1. **📚 Title, by Author**
 2. **Why it matters to you** (2 to 4 sentences): what the book argues, tied to where it came from (the list's source field) and to the user's optional context.
 3. **The three slots:** each with a linked title, channel, length, year, and one line on what the author covers. Fallbacks are labelled.
-4. **Couldn't verify:** only if there are any.
-5. **▶ Watch first:** which one to start with, and why.
-6. **🎧 Listen for:** one key idea.
+4. **▶ Watch first:** which one to start with, and why. It may be a fallback, but then say so.
+5. **🎧 Listen for:** one key idea.
+6. **Couldn't verify:** only if there are any, with a one-line hint of which slot each could fill.
 7. **Feedback prompt:** "Reply with 👍 or 👎 for each video, and a 2-3 line note on what you learned."
 
 Keep the post short and skimmable.
 
 ## 6. Feedback and learning notes
 
-When the user replies to a post, add a row to `notes.md`:
+When the user replies to a post, add a row to `notes.md` for each video they rate. If they give bare emojis without naming videos (e.g. "👍👍👎"), map them in slot order (~10, middle, long); if the count doesn't match, ask once. A reply to an older post is matched by book. Reply with a one-line acknowledgement and the depth score.
 `| Date | Book | Video | 👍/👎 | Note (user's words) | Depth 0-4 | Why that score |`
 
 **Depth rubric** (default; the user can change it in `rules.md`):
@@ -100,7 +102,9 @@ When the user replies to a post, add a row to `notes.md`:
 
 Score the note itself, not how long it is.
 
-**Weekly** (the first run of each week): add a short line to the post with last week's thumbs-up rate, average depth, and which slot length gets the most 👍.
+**Weekly** (the first run of each week, skipped when `notes.md` has no rows yet): add a short line to the post with last week's thumbs-up rate, average depth, and which slot length gets the most 👍.
+
+**No feedback for 3 posts in a row:** add one line asking whether the format still works. Don't nag beyond that.
 
 **Feedback changes behaviour:** a 👎 with a reason becomes a calibration example in `rules.md`. Ask before turning a pattern into a new rule.
 
